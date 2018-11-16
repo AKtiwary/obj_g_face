@@ -21,8 +21,9 @@ from object_detection.utils import label_map_util
 
 from gender_classification import *
 
-CWD_PATH = os.getcwd()
 
+############################################# Object detection ###################################
+CWD_PATH = os.getcwd()
 # Path to frozen detection graph. This is the actual model that is used for the object detection.
 MODEL_NAME = 'ssd_mobilenet_v1_coco_11_06_2017'
 PATH_TO_CKPT = os.path.join(CWD_PATH, 'object_detection', MODEL_NAME, 'frozen_inference_graph.pb')
@@ -92,9 +93,7 @@ def worker(input_q, output_q):
     sess.close()
 
 
-####################################################################################################
-#!/usr/bin/env python
-# coding: utf-8
+#############################################Gender Classification Model Functions #################
 
 # ## 1. Load trained LeviNet
 
@@ -102,20 +101,18 @@ import os
 from agegender_utils import *
 from utils import *
 from face_utils import *
-
 import matplotlib.pyplot as plt
 #get_ipython().run_line_magic('matplotlib', 'inline')
-
 from keras.models import load_model
 
 MODEL_DIR = 'gender_classification/models'
 
+known_face_encodings=[]
+known_face_names=[]
 
 modelName = os.path.join(MODEL_DIR, 'weights-033-0.2842-20181112.hdf5')
 genderModel = load_model(modelName)
-
 #LOG(INFO, 'Done loading trained LeviNet model')
-
 
 # ## 2. Load Face Aligner for Face alignment
 
@@ -186,10 +183,6 @@ def predictGender(gender_model, face_aligner, frame):
 
     return frame
 
-
-known_face_encodings=[]
-known_face_names=[]
-
 def faceTraining(imageName):
     #known_face_encodings=[]
     #known_face_names=[]
@@ -217,8 +210,6 @@ def read_image():
 
 if __name__ == '__main__':
     known_face_encodings, known_face_names = read_image()
-#    read_image()
-
     parser = argparse.ArgumentParser()
     parser.add_argument('-src', '--source', dest='video_source', type=int,
                         default=0, help='Device index of the camera.')
@@ -242,6 +233,7 @@ if __name__ == '__main__':
 
     while True:
         frame = video_capture.read()
+############################### Gender Classification Part #########################
         frame = predictGender(genderModel, faceAligner, frame)
 ##################################Face Rrecognition Part###########################
         rgb_im = frame[:, :, ::-1]
@@ -277,18 +269,9 @@ if __name__ == '__main__':
             font = cv2.FONT_HERSHEY_DUPLEX
             cv2.putText(frame, name, (left + 6, bottom - 6), font, 0.5, (255, 255, 255), 1)
 
-###################################################################################
-
-#       end_time = time.time()
-#       prx_time = end_time - start_time
-#       LOG(DEBUG, 'Processing time: {:>.3f}\n'.format(prx_time))
+###################################### Object Detection part #############################################
 
         input_q.put(frame)
-
-
-        #    cv.imwrite(image)
-       # frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-        #
 
         t = time.time()
 
@@ -308,14 +291,12 @@ if __name__ == '__main__':
                                int(point['ymin'] * args.height) - 10), color, -1, cv2.LINE_AA)
                 cv2.putText(frame, name[0], (int(point['xmin'] * args.width), int(point['ymin'] * args.height)), font,
                             0.3, (0, 0, 0), 1)
-#            start_time = time.time()
 
-#            cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-#            cv2.namedWindow('Video',cv2.WINDOW_AUTOSIZE)
-            cv2.namedWindow("output", cv2.WINDOW_NORMAL)        # Create window with freedom of dimensions
+#           cv2.namedWindow('Video',cv2.WINDOW_AUTOSIZE)
+            cv2.namedWindow("output", cv2.WINDOW_NORMAL)         # Create window with freedom of dimensions
 #            im = cv2.imread("earth.jpg")                        # Read image
-            frame = cv2.resize(frame, (600, 600))                    # Resize image
-#            cv2.imshow("output", imS)                            # Show image
+            frame = cv2.resize(frame, (600, 600))                # Resize image
+#            cv2.imshow("output", imS)                           # Show image
 
 #            cv2.resizeWindow('image', 600, 600)
             cv2.imshow('output', frame)
@@ -334,3 +315,4 @@ if __name__ == '__main__':
     video_capture.stop()
     cv2.destroyAllWindows()
 #########################################################################################################
+
